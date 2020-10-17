@@ -1,4 +1,5 @@
-%
+% Author: Hamid Reza Tanhaei
+% FFT algorithm simulation based on radix-2
 clc
 clear
 close all

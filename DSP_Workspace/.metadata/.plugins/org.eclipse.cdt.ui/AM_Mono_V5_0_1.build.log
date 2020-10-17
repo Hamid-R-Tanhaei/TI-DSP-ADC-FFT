@@ -1,0 +1,63 @@
+
+**** Build of configuration Debug for project AM_Mono_V5_0_1 ****
+
+"C:\\ti\\ccsv7\\utils\\bin\\gmake" -k -j 8 all -O 
+ 
+'Building file: "../Source/DSP2803x_CSMPasswords.asm"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_CSMPasswords.d_raw" --obj_directory="Source"  "../Source/DSP2803x_CSMPasswords.asm"
+'Finished building: "../Source/DSP2803x_CSMPasswords.asm"'
+ 
+'Building file: "../Source/DSP2803x_CodeStartBranch.asm"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_CodeStartBranch.d_raw" --obj_directory="Source"  "../Source/DSP2803x_CodeStartBranch.asm"
+'Finished building: "../Source/DSP2803x_CodeStartBranch.asm"'
+ 
+'Building file: "../Source/DSP2803x_CpuTimers.c"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_CpuTimers.d_raw" --obj_directory="Source"  "../Source/DSP2803x_CpuTimers.c"
+'Finished building: "../Source/DSP2803x_CpuTimers.c"'
+ 
+'Building file: "../Source/DSP2803x_usDelay.asm"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_usDelay.d_raw" --obj_directory="Source"  "../Source/DSP2803x_usDelay.asm"
+'Finished building: "../Source/DSP2803x_usDelay.asm"'
+ 
+'Building file: "../Source/DSP2803x_DefaultIsr.c"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_DefaultIsr.d_raw" --obj_directory="Source"  "../Source/DSP2803x_DefaultIsr.c"
+'Finished building: "../Source/DSP2803x_DefaultIsr.c"'
+ 
+'Building file: "../Source/DSP2803x_PieCtrl.c"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_PieCtrl.d_raw" --obj_directory="Source"  "../Source/DSP2803x_PieCtrl.c"
+'Finished building: "../Source/DSP2803x_PieCtrl.c"'
+ 
+'Building file: "../Source/DSP2803x_PieVect.c"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_PieVect.d_raw" --obj_directory="Source"  "../Source/DSP2803x_PieVect.c"
+'Finished building: "../Source/DSP2803x_PieVect.c"'
+ 
+'Building file: "../Source/DSP2803x_SysCtrl.c"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_SysCtrl.d_raw" --obj_directory="Source"  "../Source/DSP2803x_SysCtrl.c"
+'Finished building: "../Source/DSP2803x_SysCtrl.c"'
+ 
+'Building file: "../Source/DSP2803x_GlobalVariableDefs.c"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_GlobalVariableDefs.d_raw" --obj_directory="Source"  "../Source/DSP2803x_GlobalVariableDefs.c"
+'Finished building: "../Source/DSP2803x_GlobalVariableDefs.c"'
+ 
+'Building file: "../main.c"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1" --include_path="D:/DSP_Workspace/AM_Mono_V5_0_1/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="main.d_raw"  "../main.c"
+'Finished building: "../main.c"'
+ 
+'Building target: "AM_Mono_V5_0_1.out"'
+'Invoking: C2000 Linker'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --opt_for_speed=2 --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number -z -m"AM_Mono_V5_0_1.map" --stack_size=0x300 --warn_sections -i"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/lib" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --reread_libs --diag_wrap=off --display_error_number --absolute_exe --xml_link_info="AM_Mono_V5_0_1_linkInfo.xml" --rom_model -o "AM_Mono_V5_0_1.out" "./main.obj" "./Source/DSP2803x_CSMPasswords.obj" "./Source/DSP2803x_CodeStartBranch.obj" "./Source/DSP2803x_CpuTimers.obj" "./Source/DSP2803x_DefaultIsr.obj" "./Source/DSP2803x_GlobalVariableDefs.obj" "./Source/DSP2803x_PieCtrl.obj" "./Source/DSP2803x_PieVect.obj" "./Source/DSP2803x_SysCtrl.obj" "./Source/DSP2803x_usDelay.obj" "../DSP2803x_Headers_nonBIOS.cmd" "../F28033.cmd"  -llibc.a 
+<Linking>
+'Finished building target: "AM_Mono_V5_0_1.out"'
+ 
+
+**** Build Finished ****

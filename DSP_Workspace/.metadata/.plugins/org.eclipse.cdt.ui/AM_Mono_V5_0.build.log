@@ -1,0 +1,16 @@
+
+**** Build of configuration Debug for project AM_Mono_V5_0 ****
+
+make all 
+ 
+'Building file: "../main.c"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 --preproc_with_compile --preproc_dependency="main.d_raw"  "../main.c"
+
+>> Compilation failure
+"../main.c", line 22: fatal error: cannot open source file "DSP28x_Project.h"
+1 catastrophic error detected in the compilation of "../main.c".
+Compilation terminated.
+make: *** [main.obj] Error 1
+
+**** Build Finished ****

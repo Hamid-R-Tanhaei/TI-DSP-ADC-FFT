@@ -1,0 +1,8 @@
+
+**** Build of configuration Debug for project AM_Dual_V5_0_1 ****
+
+"C:\\ti\\ccsv7\\utils\\bin\\gmake" -k -j 8 all -O 
+ 
+gmake[1]: 'AM_Dual_V5_0_1.out' is up to date.
+
+**** Build Finished ****

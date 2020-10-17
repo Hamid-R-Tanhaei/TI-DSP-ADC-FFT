@@ -1,0 +1,1332 @@
+//###########################################################################
+//  Copyright: SPINER-Copyright @ 2018
+//  Hardware Board : RF_RX_V8.0 (Dual, 8.2MHz & 4.75MHz merged)
+//  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ //
+//  Developing / Debugging Log:
+//  ++++++++++++++++++++++++++ //
+//  Debugging/Developing Date: Feb to Sep 2018 ???
+//  Firmware Ver./Rev. : 1.0
+//  Release Date: 15 Sep 2018 ???
+//  Compatible with PCB_Code:
+//#define Firmware_Ver    1
+//#define Firmware_Rev    0
+//
+//
+#define Toggle1_Mux   GpioCtrlRegs.GPAMUX2.bit.GPIO24
+#define Toggle1_Dir   GpioCtrlRegs.GPADIR.bit.GPIO24
+#define Toggle1_Clr   GpioDataRegs.GPACLEAR.bit.GPIO24
+#define Toggle1_Set   GpioDataRegs.GPASET.bit.GPIO24
+#define Toggle1_Dat   GpioDataRegs.GPADAT.bit.GPIO24
+//
+//
+#define Activate_Pulse_Mux    GpioCtrlRegs.GPAMUX1.bit.GPIO11
+#define Activate_Pulse_Dir    GpioCtrlRegs.GPADIR.bit.GPIO11
+#define Activate_Pulse_PullUp    GpioCtrlRegs.GPAPUD.bit.GPIO11
+#define Activate_Pulse_Dat    GpioDataRegs.GPADAT.bit.GPIO11
+#define Activate_Pulse_Clr    GpioDataRegs.GPACLEAR.bit.GPIO11
+#define Activate_Pulse_Set    GpioDataRegs.GPASET.bit.GPIO11
+//
+#define No_Inpt_Flag_Mux    GpioCtrlRegs.GPAMUX1.bit.GPIO5
+#define No_Inpt_Flag_Dir    GpioCtrlRegs.GPADIR.bit.GPIO5
+#define No_Inpt_Flag_PullUp    GpioCtrlRegs.GPAPUD.bit.GPIO5
+#define No_Inpt_Flag_Dat      GpioDataRegs.GPADAT.bit.GPIO5
+#define No_Inpt_Flag_Set      GpioDataRegs.GPASET.bit.GPIO5
+#define No_Inpt_Flag_Clr      GpioDataRegs.GPACLEAR.bit.GPIO5
+//
+////
+// Constants:
+#define     FFT32_Weights   {255,0,250,-50,236,-98,212,-142,180,-180,142,-212,98,-236,50,-250,0,-255,-50,-250,-98,-236,-142,-212,-180,-180,-212,-142,-236,-98,-250,-50}
+//
+#define     sin32_0_2_5period_full {2048,3062,3809,4094,3841,3117,2112,1090,319,3,224,924,1919,2948,3741,4088,3900,3225,2240,1205,391,13,169,818,1791,2831,3665,4074,3951,3327,2368,1324}
+#define     sin32_0_3period_10percent {2048,2161,2237,2248,2192,2087,1969,1877,1843,1877,1969,2087,2192,2248,2237,2161,2048,1934,1858,1847,1903,2008,2126,2218,2252,2218,2126,2008,1903,1847,1858,1934}
+#define     sin32_90_3period_full {4095,3711,2704,1452,422,2,347,1330,2581,3633,4090,3783,2825,1576,504,10,279,1211,2456,3548,4078,3847,2942,1702,591,26,218,1095,2330,3458,4058,3905}
+#define     sin32_0_4period_20percent   {2048,2337,2457,2337,2048,1758,1638,1758,2048,2337,2457,2337,2048,1758,1638,1758,2047,2337,2457,2337,2048,1758,1638,1758,2047,2337,2457,2337,2048,1758,1638,1758}
+#define     sin32_0_5period_full {2048,3750,3939,2447,600,40,1264,3185,4095,3185,1264,40,600,2447,3939,3750,2048,345,156,1648,3495,4055,2831,910,1,910,2831,4055,3495,1648,156,345}
+#define     sin32_0_6period_30percent    {2048,2615,2482,1812,1433,1812,2482,2615,2048,1480,1613,2283,2662,2283,1613,1480,2047,2615,2482,1812,1433,1812,2482,2615,2048,1480,1613,2283,2662,2283,1613,1480}
+#define     sin16_0_1_period_full   {2048,2831,3495,3939,4095,3939,3495,2831,2048,1264,600,156,1,156,600,1264}
+#define     sin16_90_1_5period_full    {2048,910,156,40,600,1648,2831,3750,4095,3750,2831,1648,600,40,156,910}
+#define     sin16_0_2_period_full   {2048,3495,4095,3495,2048,600,1,600,2047,3495,4095,3495,2048,600,1,600}
+#define     sin16_0_3_period_full   {2048,3939,3495,1264,1,1264,3495,3939,2048,156,600,2831,4095,2831,600,156}
+#define     sin16_0_4_period_full   {2048,4095,2048,1,2047,4095,2048,1,2047,4095,2048,1,2047,4095,2048,1}
+#define     sin16_0_3period_30pecent    {2048,2615,2482,1812,1433,1812,2482,2615,2048,1480,1613,2283,2662,2283,1613,1480}
+#define     sin16_90_5_period_full   {4095,1264,600,3939,2048,156,3495,2831,1,2831,3495,156,2047,3939,600,1264}
+//
+//
+//
+//###########################################################################
+#include "DSP28x_Project.h"     // Device Headerfile and Examples Include File
+#include <stdio.h>
+__interrupt void cpu_timer0_isr(void);
+//__interrupt void xint1_isr(void);
+void    Initialize_Routine(void);
+//void    Start_Over(void);
+//void    Tag_Scan_Service(Uint16 Scan_mode);
+//void    Jam_scan_service(void);
+//void    Jam_Process(void);
+//Uint16  Jam_Sub_Scan(void);
+//void    DDS_initialize(void);
+//void    DDS_freq_set(Uint16 dds_value);
+//void    Monitor_set(void);
+//void    Bar_Graph_Trans(void);
+void    Init_GPIOs(void);
+void    Init_ADC(void);
+void    ADC_Capture_M1(void);
+//void    ADC_Capture_M2(Uint16 index);
+//void    ADC_TxTune_Offset(Uint16 index);
+//void    ADC_TxTune_Capture(Uint16 index);
+void    FFT_32(void);
+void    FFT_16(void);
+//void    PostProcess(void);
+//void    Test_Procedure(void);
+//void    Set_Rx_test_signal_M8(void);
+//void    Set_Rx_test_signal_M4(void);
+//void    VGA_RX_Set(Uint16 RxGain);
+//void    VGA_TX_Set(Uint16 TxGain);
+//void    Main_Routine(void);
+//void    Sens_Set(void);
+//void    AGC(void);
+//void    State_Handler(void);
+//void    Keys_Handler(void);
+void    Flush_Vectors(void);
+//Uint16  Calculate_Noise(Uint16  index);
+//void    Tag_Process1(void);
+//void    Tag_Process2(void);
+//void    Test_LED_bar_graph(void);
+//Uint16  Test_Rx_Circuitry(void);
+//Uint16  Test_EEPROM(void);
+//Uint16  Test_GPIOs(void);
+//Uint16  Test_ZC(void);
+//void    Test_FFT16_prog(void);
+//void    Test_FFT32_prog(void);
+//void    Auto_Sync_Handler(void);
+//void    Calculate_TxTune(void);
+//void    Jamming_evaluation(void);
+//Uint16  Bar_Graph_CN(Uint16 value,Uint16  step1,Uint16 step2,Uint16 step3,Uint16 step4,Uint16 step5,Uint16 step6,Uint16 step7,Uint16 step8,Uint16 step9,Uint16 step10);
+//Uint16  Bar_Graph_PT(Uint16 value,Uint16  step1,Uint16 step2,Uint16 step3,Uint16 step4,Uint16 step5,Uint16 step6,Uint16 step7,Uint16 step8,Uint16 step9,Uint16 step10,Uint16 step11);
+void    Reset_Device(void);
+//Uint16  EEPROM_Write(Uint16 EEPROM_Address, Uint16 Data); //struct I2CMSG *msg)
+//Uint16  EEPROM_Read(Uint16 EEPROM_Address);
+//void    Alarming(void);
+//void    Periodic_initialize(void);
+//#endif
+//#if(1)  // Global Variables:
+//Uint32  Gpios_check = 0;
+//Uint16  volatile    Counter;
+//Uint16  volatile    Sync_index;
+//Uint16  volatile    Sync_Alternative;
+Uint16  volatile    RealTime_Flag;
+//Uint16  Sync_collision;
+//Uint16  Auto_Sync_Enabled;
+//Uint16  Sens_key_value,Sync_key_value;
+//Uint16  State_Counter,Scan_Mode_1,Scan_Mode_2_1st,Scan_Mode_2_2nd;
+//Uint16  I2C_Result_Write;
+//Uint16  Sens_key_timeout,Sens_key_press,Sync_key_timeout,Sync_key_press;
+//Uint16  Alarm_timer;
+//Uint16  LED_Bar_switch,LED_Bar_1,LED_Bar_2,LED_Bar_3,LED_Bar_4,LED_Bar_5,LED_Bar_6;
+//Uint16  volatile    Error_Code = 0;
+//Uint16  blink_counter;
+//Uint16  Periodic_init_counter;
+//
+//Uint16  Fmin_mode1,Fmin_ref_mode1,Fmin_mode2,Fref_Jamm;
+//Uint16  RX_Gain,RX_Gain_Max,RX_Gain_Min,TX_Gain,TX_Gain_Max;
+//Uint16  RxG_lvls_monitor_1,RxG_lvls_monitor_2,RxG_lvls_monitor_3,RxG_lvls_monitor_4,RxG_lvls_monitor_5,RxG_lvls_monitor_6,RxG_lvls_monitor_7,RxG_lvls_monitor_8,RxG_lvls_monitor_9,RxG_lvls_monitor_10,RxG_lvls_monitor_11;
+//Uint16  AGC_Smooth_time;
+//
+Uint16  perm_32[] = {0,32,16,48,8,40,24,56,4,36,20,52,12,44,28,60};
+Uint16  perm_16[] = {0,16,8,24,4,20,12,28};
+//
+//Uint16  Tag_smooth_value;
+//Uint16  Tag_smth_value1,Tag_smth_value2;
+//Uint16  Noise_smth_value1,Noise_smth_value2;
+//Uint16  Tag_temp_band_M1[Freq_Bins];
+//Uint16  Tag_temp_band_M2[Freq_Bins];
+//Uint16  Tag_Band_values_M1[Freq_Bins];
+//Uint16  Tag_Band_values_M2[Freq_Bins];
+//Uint16  Tag_vector_ctr1,Tag_vector_ctr2;
+//Uint16  Tag_Results_mode1[8][4]; // Tag Assessments Results for each 8 1st-mech-scans in a row
+//Uint16  Tag_Results_mode2[8][4]; // Tag Assessments Results for each 8 2nd-mech-scans in a row.
+//Uint16  Tag_index_dominant_M1,Tag_instant_value_M1,Back_instant_value_M1,Noise_instant_value_M1;
+//Uint16  Tag_index_dominant_M2,Tag_instant_value_M2,Back_instant_value_M2,Noise_instant_value_M2;
+//Uint16  Min_No_of_Tag_mode1,Min_No_of_Tag_mode2,Tag_Threshold_mode1,Tag_Threshold_mode2;
+//
+//Uint16  Jam_instant_value,Jam_smooth_value;
+//Uint16  Jam_start_up_counter,Jam_Scan_index;
+//Uint16  Jam_vector[8];
+//Uint16  Jam_vector_updated;
+//Uint16  Jam_vector_counter;
+//
+//Uint16  TxTune_toggle_A_B;
+//Uint16  TxTune_Avg_buffer_A[8];
+//Uint16  TxTune_Avg_buffer_B[8];
+//Uint16  Tx_Tune_Avg_cntr_A;
+//Uint16  Tx_Tune_Avg_cntr_B;
+//Uint16  TxTune_valueA;
+//Uint16  TxTune_valueB;
+//Uint16  ADC_TxTune_Buffer_A[Freq_Bins];
+//Uint16  ADC_TxTune_Buffer_B[Freq_Bins];
+//Uint16  ADC_TxTune_Null_A[Freq_Bins];
+//Uint16  ADC_TxTune_Null_B[Freq_Bins];
+//
+#pragma DATA_SECTION(ADC_Buffer, "VecSpace");
+int16   ADC_Buffer[32];
+//
+//#pragma DATA_SECTION(ADC_Buffer_test, "VecSpace");
+//int16   ADC_Buffer_test[] = sin16_0_3period_30pecent;
+//
+//#pragma DATA_SECTION(ADC_Buff_M2, "VecSpace");
+//int16   ADC_Buff_M2[100];
+//
+#pragma DATA_SECTION(Weight, "VecSpace");
+int16   Weight[32] = FFT32_Weights; // {255,0,250,-50,236,-98,212,-142,180,-180,142,-212,98,-236,50,-250,0,-255,-50,-250,-98,-236,-142,-212,-180,-180,-212,-142,-236,-98,-250,-50};
+//
+#pragma DATA_SECTION(fft_draft, "VecSpace");
+int32   fft_draft[64]; // {3603,3603,2584,2584,1172,1172,-418,-418,-1945,-1945,-3176,-3176,-3923,-3923,-4073,-4073,-3603,-3603,-2584,-2584,-1171,-1171,418,418,1945,1945,3176,3176,3923,3923,4073,4073,3603,3603,2584,2584,1171,1171,-418,-418,-1945,-1945,-3176,-3176,-3923,-3923,-4073,-4073,-3603,-3603,-2584,-2584,-1171,-1171,418,418,1945,1945,3176,3176,3923,3923,4073,4073};
+//
+#pragma DATA_SECTION(FFT_out_32, "VecSpace");
+Uint16  FFT_out_32[16];
+//
+#pragma DATA_SECTION(FFT_out_16, "VecSpace");
+Uint16  FFT_out_16[8];
+//
+//#pragma DATA_SECTION(ADC_TxTune_Buffer, "VecSpace");
+//
+//#pragma DATA_SECTION(ADC_TxTune_Null, "VecSpace");
+//
+//#pragma DATA_SECTION(Jam_vector_overal, "VecSpace");
+//Uint16  Jam_vector_overal[16][10];
+//
+//#pragma DATA_SECTION(Jam_vector, "VecSpace");
+
+//#pragma DATA_SECTION(perm_32, "VecSpace");
+//#pragma DATA_SECTION(Tag_Results_mode1, "VecSpace");
+//#pragma DATA_SECTION(Tag_Results_mode2, "VecSpace");
+//#pragma DATA_SECTION(Tag_Band_values_M1, "VecSpace");
+//#pragma DATA_SECTION(Tag_Band_values_M2, "VecSpace");
+//#pragma DATA_SECTION(perm_16,"VecSpace");
+//#pragma DATA_SECTION(Jam_vector_avged, "VecSpace");
+//#endif
+//=============================================//
+void 	main(void)
+{
+    Init_GPIOs();
+    //
+    memcpy(&RamfuncsRunStart, &RamfuncsLoadStart, (size_t)&RamfuncsLoadSize);
+    //
+    InitSysCtrl(); // Step 1. Initialize System Control: PLL, WatchDog, enable Peripheral Clocks
+    //
+    DINT;      // Disable CPU interrupts
+    //
+    InitFlash();
+    //
+    InitPieCtrl(); // Initialize the PIE control registers to their default state. The default state is all PIE interrupts disabled and flags are cleared.
+    //
+    IER = 0x0000;  // Disable CPU interrupts and
+    IFR = 0x0000;  // clear all CPU interrupt flags
+    //
+    // Initialize the PIE vector table with pointers to the shell Interrupt
+    // Service Routines (ISR).
+    // This will populate the entire table, even if the interrupt
+    // is not used in this example.  This is useful for debug purposes.
+    // The shell ISR routines are found in DSP2803x_DefaultIsr.c.
+    InitPieVectTable();
+    //
+    // Interrupts that are used in this example are re-mapped to
+    // ISR functions found within this file.
+    //     InitEPWMs();
+    //
+    Init_GPIOs();
+    Init_ADC();
+    Initialize_Routine();
+    //
+    //
+  //  if (Key_Sens_Dat == 0)
+  //  {
+  //      ServiceDog();
+  //      DisableDog();
+  //      Test_Procedure();
+  //      Reset_Device();
+  //  }
+    //
+    ServiceDog();    // Reset the watchdog counter
+    //
+    //if (CsmRegs.CSMSCR.bit.SECURE == 1)
+    //{   Monitoring_Firmware_Ver_Rev();} // make sure if the device is secured
+    //  Set_Rx_test_signal_M8();
+    //    Test_FFT16_prog();
+    //    Test_FFT32_prog();
+    //Start_Over();
+    // turn off XLCKOUT:
+    EALLOW;
+    GpioCtrlRegs.GPAMUX2.bit.GPIO18 = 0;  // GPIO18 = GPIO
+    SysCtrlRegs.XCLK.bit.XCLKOUTDIV = 3;
+    EDIS;
+    //
+    // Enable global Interrupts and higher priority real-time debug events:
+    EINT;   // Enable Global interrupt INTM
+    ERTM;   // Enable Global realtime interrupt DBGM
+    //
+    //Main_Routine();
+    // Enable Timer_1ms:
+    CpuTimer0Regs.TIM.all = 0 ;
+    CpuTimer0Regs.PRD.all = (Uint32) (300000);  //5msec
+    CpuTimer0Regs.TCR.bit.TRB = 1; // Reload timer0
+    CpuTimer0Regs.TCR.bit.TSS = 0; // Start Timer0
+    CpuTimer0Regs.TCR.bit.TIE = 1; // Enable timer interrupt
+    //
+    for(;;);
+}
+//=============================================//
+void    Reset_Device(void)
+{
+    DINT;
+    EALLOW;
+    SysCtrlRegs.WDCR = 0x0047; // a wrong value in order to reset device
+    EDIS;
+}
+//=============================================//
+/*void    Monitoring_Firmware_Ver_Rev(void)
+{
+    Uint16  i;
+    // Buzz_start_up:
+    Back_Light_Clr = 1;
+    Alrm_Light_Clr = 1;
+    Buzz_pin_Clr = 1;
+    Err_pin_Clr = 1;
+    LED_M8_Clr = 1;
+    LED_M4_Clr = 1;
+    ServiceDog();    // Reset the watchdog counter
+    DELAY_US(500000);
+    // Buzz_start_up:
+    Alrm_Light_Set = 1;
+    Buzz_pin_Set = 1;
+    Err_pin_Set = 1;
+    LED_M8_Set = 1;
+    LED_M4_Set = 1;
+    //
+    LED_Bar_1 = Bar_Graph_PT(Firmware_Rev,0,1,2,3,4,5,6,7,8,9,10);
+    LED_Bar_2 = Bar_Graph_PT(Firmware_Ver,0,1,2,3,4,5,6,7,8,9,10);
+    LED_Bar_3 = 0;
+    LED_Bar_4 = 0;
+    LED_Bar_5 = 0;
+    LED_Bar_6 = 0;
+    for (i = 0; i < 1000; i++)
+    {
+        Monitor_set();
+        DELAY_US(1000);
+        ServiceDog();    // Reset the watchdog counter
+    }
+    LED_Bar_1 = 0;
+    LED_Bar_2 = 0;
+    Monitor_set();
+    //
+    LED_M8_Clr = 1;
+    LED_M4_Clr = 1;
+    Buzz_pin_Clr = 1;
+    Err_pin_Clr = 1;
+    Back_Light_Set = 1;
+    Alrm_Light_Clr = 1;
+    DELAY_US(200000);
+    ServiceDog();    // Reset the watchdog counter
+}*/
+//=============================================//
+//=============================================//
+/*void    Test_FFT32_prog(void)
+{
+    Uint16 index,k;
+    //
+    DINT;
+    while(1)
+    {
+        for (index = 0; index < Freq_Bins; index++)
+        {
+            //        index = 0;
+            for (k = 0; k < 32; k++)
+            {
+                ADC_Buffer_M1[index][k] = ADC_Buffer_test[k];
+            }
+            Toggle1_Set = 1;
+            FFT_32(index);
+            Toggle1_Clr = 1;
+        }
+    }
+}
+*/
+////
+/*void    Test_FFT16_prog(void)
+{
+    Uint16 index,k;
+    //
+    DINT;
+    while(1)
+    {
+
+        for (index = 0; index < Freq_Bins; index++)
+        {
+            for (k = 0; k < 100; k++)
+            {
+                ADC_Buff_M2[k] = 2048;
+            }
+
+            for (k = 0; k < 16; k++)
+            {
+                ADC_Buff_M2[(index+1)*3 + k] = ADC_Buffer_test[k];
+            }
+            Toggle1_Set = 1;
+            FFT_16(index);
+            Toggle1_Clr = 1;
+        }
+    }
+}
+*/
+//=============================================//
+//=============================================//
+//=================================//
+//#pragma CODE_SECTION(Alarming, "ramfuncs");
+//==========================================//
+//#pragma CODE_SECTION(Auto_Sync_Handler, "ramfuncs");
+//=============================================//
+//#pragma CODE_SECTION(State_Handler, "ramfuncs");
+//=============================================//
+//============================================//
+//============================================//
+//============================================//
+//============================================//
+//============================================//
+//============================================//
+void 	Initialize_Routine(void)
+{
+
+    // Enable Watchdog
+    ServiceDog();    // Reset the watchdog counter
+    EALLOW;
+    SysCtrlRegs.SCSR = 0; //BIT1;
+    SysCtrlRegs.WDCR = 0x002F; // WDCLK = OSCCLK/512/64
+    //
+    DINT;
+    InitCpuTimers();   // For this example, only initialize the Cpu Timers
+    CpuTimer0Regs.TCR.all = 0; // 0x4001; // Use write-only instruction
+    CpuTimer0Regs.TCR.bit.TIE = 0;
+    // External Interrupt: Zero Cross
+   // GpioIntRegs.GPIOXINT1SEL.bit.GPIOSEL = ZC_pin_No;   // XINT1 is ZC
+    // GpioIntRegs.GPIOXINT2SEL.bit.GPIOSEL = Slave_pulse_No;   // XINT2 is Slave-Pulse
+    // Configure XINT1
+   // XIntruptRegs.XINT1CR.bit.POLARITY = 3;      // both edge (0:Falling edge, 1:Rising edge, 3:both edge)
+    // Enable XINT1
+   // XIntruptRegs.XINT1CR.bit.ENABLE = 1;        // Enable XINT1
+    // Interrupts that are used in this example are re-mapped to
+    // ISR functions found within this file.
+    //PieVectTable.XINT1 = &xint1_isr;    // Zero-Cross-Pulse
+    PieVectTable.TINT0 = &cpu_timer0_isr;
+    EDIS;    // This is needed to disable write to EALLOW protected registers
+    //
+    // Enable XINT1 and XINT2 and TINT0 in the PIE: Group 1 interrupt 4 & 5 &7
+    PieCtrlRegs.PIECTRL.bit.ENPIE = 1;    // Enable the PIE block
+    PieCtrlRegs.PIEIER1.bit.INTx4 = 1;    // XINT1(Zero-Cross-Pulse)      // Enable PIE Group 1 INT4
+    PieCtrlRegs.PIEIER1.bit.INTx7 = 1;    // TINT0 (Timer0)   // Enable PIE Group 1 INT7
+    IER |= M_INT1;                        // Enable CPU INT1
+    DINT;
+    // Initialize I2C
+   // I2caRegs.I2CSAR = 0x0050;        // Slave address - EEPROM control code
+   // I2caRegs.I2CPSC.all = 6;         // Prescaler - need 7-12 Mhz on module clk
+   // I2caRegs.I2CCLKL = 10;           // NOTE: must be non zero
+   /// I2caRegs.I2CCLKH = 5;            // NOTE: must be non zero
+    //        I2caRegs.I2CIER.all = 0x24; // 0x24;      // Enable SCD & ARDY interrupts
+    //I2caRegs.I2CMDR.all = 0x0020;    // Take I2C out of reset
+    // Stop I2C when suspended
+    // I2caRegs.I2CFFTX.all = 0x6000;   // Enable FIFO mode and TXFIFO
+    // I2caRegs.I2CFFRX.all = 0x2040;   // Enable RXFIFO, clear RXFFINT,
+    // Sens_Shadow = EEPROM_Read(Sens_key_eeprom_addr);
+    //
+    // initialize DDS:
+    //DDS_initialize();
+    DELAY_US(100);
+    //
+    //Counter = 0;
+    //Sync_index = 0;
+    //
+    //Uint16   EEPROM_Sign_value;
+    //DELAY_US(20000);
+    //EEPROM_Sign_value = EEPROM_Read(Signature_eeprom_Addr);
+    DELAY_US(10000);
+    //if (EEPROM_Sign_value != RF_RxTx_V8_0_Signature)
+   // {
+   //     DELAY_US(10000);
+   //     I2C_Result_Write = EEPROM_Write(Sens_key_eeprom_addr, Sens_default_value);
+   //     DELAY_US(10000);
+   //     I2C_Result_Write = EEPROM_Write(Sync_key_eeprom_addr, Sync_default_value);
+   //     DELAY_US(10000);
+        //I2C_Result_Write = EEPROM_Write(Sync_index_eeprom_addr, 0);
+        //DELAY_US(10000);
+   //     I2C_Result_Write = EEPROM_Write(Signature_eeprom_Addr, RF_RxTx_V8_0_Signature);
+   //     DELAY_US(10000);
+   // }
+}
+//===========================================//
+//============================================//
+void    Flush_Vectors(void)
+{
+    Uint16  index,i;
+    //
+    for (i = 0; i < 32; i++)
+        {
+            ADC_Buffer[i] = 0x0800; // Mid value
+        }
+    //
+    //
+    for (index = 0; index < 64; index++)
+    {
+        fft_draft[index] = 0;
+    }
+    //
+    for (i = 0; i < 16; i++)
+        {
+            FFT_out_32[i] = 0;
+        }
+    //
+    for (i = 0; i < 8; i++)
+        {
+            FFT_out_16[i] = 0;
+        }
+    //
+    //
+    }
+//============================================//
+/*#pragma CODE_SECTION(xint1_isr,"ramfuncs");
+__interrupt void xint1_isr(void)
+{
+    if (RealTime_Flag == 1)
+    {
+    if (No_Inpt_Flag_Dat == 1)
+    { Err_pin_Set = 1;  Error_Code = 0x0002;}
+    Counter = 0;
+    // Enable Timer_1ms:
+    CpuTimer0Regs.TIM.all = 0 ;
+    CpuTimer0Regs.PRD.all = (Uint32) (60000);  //1msec
+    CpuTimer0Regs.TCR.bit.TRB = 1; // Reload timer0
+    CpuTimer0Regs.TCR.bit.TSS = 0; // Start Timer0
+    CpuTimer0Regs.TCR.bit.TIE = 1; // Enable timer interrupt
+    //
+    Monitor_set();
+    //        Xint1Count++;]
+    Toggle1_Set = 1;
+    if (Counter == Sync_index)
+    {
+        if (Activate_Pulse_Dat == 1)
+        { Err_pin_Set = 1;  Error_Code = 0x0004;}
+        if (Counter == Sync_Alternative)
+        {
+            Activate_Pulse_Set = 1;
+        }
+        else
+        {
+            Sync_index = Sync_Alternative;
+        }
+    }
+    }
+    else
+    {
+        RealTime_Flag = 1;
+    }
+    // Acknowledge this interrupt to get more from group 1
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
+}*/
+//==============================================//
+#pragma CODE_SECTION(cpu_timer0_isr,"ramfuncs");
+__interrupt void cpu_timer0_isr(void)
+{
+    ServiceDog();    // Reset the watchdog counter
+    Toggle1_Set = 1;
+   // DELAY_US(1000);
+    ADC_Capture_M1();
+    FFT_32();
+    Toggle1_Clr = 1;
+
+        // stop timer0 , no further count
+        //CpuTimer0Regs.TCR.bit.TIE = 0;
+        //CpuTimer0Regs.TCR.bit.TSS = 1;
+    CpuTimer0Regs.TCR.bit.TIF = 1;
+    CpuTimer0.InterruptCount++;
+    //
+    //Monitor_set();
+    //
+
+    // Acknowledge this interrupt to receive more interrupts from group 1
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
+}
+//==============================================//
+//==============================================//
+//==================================================//
+//==============================================//
+//==============================================//
+//==============================================//
+#pragma CODE_SECTION(FFT_32 , "ramfuncs")
+void 	FFT_32(void)
+{
+    // FFT:
+    Uint16 p;
+    Uint16 k;
+    int32 a_r;
+    int32 a_i;
+    int32 b_r;
+    int32 b_i;
+    int32 w_r;
+    int32 w_i;
+    int32 temp1;
+    int32 temp2;
+    int16  temp3;
+    //int16   temp4;
+    //index = index << 5;
+    for (k=0;k<32;k++)
+    {
+        temp3 = (ADC_Buffer[k] - 2048);
+        fft_draft[2*k] = temp3;
+        fft_draft[2*k+1] = 0 ;// temp4;
+    }
+    //index = index >> 5;
+
+    for(p=0;p<16;p++)
+    {
+        for(k=p;k<32;k=k+32)
+        {
+            a_r = fft_draft[2*k];
+            a_i = fft_draft[2*k+1];
+            b_r = fft_draft[2*k+32];
+            b_i = fft_draft[2*k+32+1];
+            //w=(exp(-pi*1i*p/16));
+            w_r = Weight[2*p];
+            w_i = Weight[2*p+1];
+            //fft_draft(k+1)=a+b;
+            fft_draft[2*k] = a_r + b_r;
+            fft_draft[2*k+1] = a_i + b_i;
+            // fft_draft(k+16)=(a-b)*w;
+            temp1 = ((a_r - b_r) * w_r) - ((a_i - b_i) * w_i);
+            fft_draft[2*k+32] = temp1 >> 8;
+            temp2 = ((a_r - b_r) * w_i) + ((a_i - b_i) * w_r);
+            fft_draft[2*k+32+1] = temp2 >> 8;
+        }
+    }
+    //
+    for (p=0;p<8;p++)
+    {
+        for (k=p;k<32;k=k+16)
+        {
+            a_r = fft_draft[2*k];
+            a_i = fft_draft[2*k+1];
+            b_r = fft_draft[2*k+16];
+            b_i = fft_draft[2*k+16+1];
+            //%t=(exp(-pi*1i*2*p/16));
+            //%w=Weight(2*p+1);
+            w_r = Weight[4*p];
+            w_i = Weight[4*p+1];
+            //%fft_draft(k+1)=b+fft_draft(k+8+1);
+            fft_draft[2*k] = a_r + b_r;
+            fft_draft[2*k+1] = a_i + b_i;
+            temp1 = ((a_r - b_r) * w_r) - ((a_i - b_i) * w_i);
+            fft_draft[2*k+16] = temp1 >> 8;
+            temp2 = ((a_r - b_r) * w_i) + ((a_i - b_i) * w_r);
+            fft_draft[2*k+1+16] = temp2 >> 8;
+        }
+    }
+    //
+    for (p=0;p<4;p++)
+    {
+        for (k=p;k<32;k=k+8)
+        {
+            a_r = fft_draft[2*k];
+            a_i = fft_draft[2*k+1];
+            b_r = fft_draft[2*k+8];
+            b_i = fft_draft[2*k+1+8];
+            // %t=(exp(-pi*1i*4*p/16));
+            // %t=Weight(4*p+1);
+            w_r = Weight[8*p];
+            w_i = Weight[8*p+1];
+
+            // %fft_draft(k+1)=b+fft_draft(k+4+1);
+            fft_draft[2*k] = (a_r + b_r);
+            fft_draft[2*k+1] = (a_i + b_i);
+
+            // %fft_draft(k+4+1)=(b-fft_draft(k+4+1))*t;
+            temp1 = ((a_r - b_r) * w_r) - ((a_i - b_i) * w_i);
+            fft_draft[2*k+8] = temp1 >> 8;
+            temp2 = ((a_r - b_r) * w_i) + ((a_i - b_i) * w_r);
+            fft_draft[2*k+1+8] = temp2 >> 8;
+        }
+    }
+    //
+    //m=1:
+    for (p=0;p<2;p++)
+    {
+        for (k=p;k<32;k=k+4)
+        {
+            a_r = fft_draft[2*k];
+            a_i = fft_draft[2*k+1];
+            b_r = fft_draft[2*k+4];
+            b_i = fft_draft[2*k+1+4];
+            //t=(exp(-pi*1i*8*p/16));
+            //t=Weight(8*p+1);
+            w_r = Weight[16*p];
+            w_i = Weight[16*p+1];
+
+            //fft_draft(k+1)=b+fft_draft(k+2+1);
+            fft_draft[2*k] = (a_r + b_r);
+            fft_draft[2*k+1] = (a_i + b_i);
+
+            //fft_draft(k+2+1)=(a-fft_draft(k+2+1))*t;
+            temp1 = ((a_r - b_r) * w_r) - ((a_i - b_i) * w_i);
+            fft_draft[2*k+4] = temp1 >> 8;
+            temp2 = ((a_r - b_r) * w_i) + ((a_i - b_i) * w_r);
+            fft_draft[2*k+1+4] = temp2 >> 8;
+        }
+    }
+    //m=0:
+    //for p=0:1:0
+    p=0;
+    for (k=p;k<32;k=k+2)
+    {
+        a_r = fft_draft[2*k];
+        a_i = fft_draft[2*k+1];
+        b_r = fft_draft[2*k+2];
+        b_i = fft_draft[2*k+1+2];
+        //t=(exp(-pi*1i*16*p/16));
+        //t=Weight(16*p+1);
+        w_r = Weight[32*p];
+        w_i = Weight[32*p+1];
+
+        //fft_draft(k+1)=a+fft_draft(k+1+1);
+        fft_draft[2*k] = (a_r + b_r);
+        fft_draft[2*k+1] = (a_i + b_i);
+
+        //fft_draft(k+1+1)=(b-fft_draft(k+1+1))*t;
+        temp1 = ((a_r - b_r) * w_r) - ((a_i - b_i) * w_i);
+        fft_draft[2*k+2] = temp1 >> 8;
+        temp2 = ((a_r - b_r) * w_i) + ((a_i - b_i) * w_r);
+        fft_draft[2*k+1+2] = temp2 >> 8;
+    }
+    //
+    //
+    //        Uint16 perm_32[] = {0,32,16,48,8,40,24,56,4,36,20,52,12,44,28,60};
+    Uint16 pidx;
+    for (k=0;k<16;k++)
+    {
+        pidx = perm_32[k];
+        temp1 = (fft_draft[pidx] * fft_draft[pidx]) + (fft_draft[pidx+1] * fft_draft[pidx+1]);
+        //FFT_out[index][k] = (temp1 >> 16);  //[k + index] = temp1 >> 16;
+        //            temp1 = sqrt(temp1);
+        temp1 = (temp1 >> 12);  //4096
+        if (k == 0)
+        {   temp1 = (temp1 >> 4);} // modify DC index
+        temp3 = 0;
+        if (temp1 > 60) // 25mV (Vp_p ADCinput, Vref = 1650mV)
+        { temp3 = 25;}
+        if (temp1 > 240) // 50mV (Vp_p ADCinput, Vref = 1650mV)
+        { temp3 = 50;}
+        if (temp1 > 550) // 75mV (Vp_p ADCinput, Vref = 1650mV)
+        { temp3 = 75;}
+        if (temp1 > 950) // 100mV
+        { temp3 = 100;}
+        if (temp1 > 1500) // 125mV
+        { temp3 = 125;}
+        if (temp1 > 2150) // 150mV
+        { temp3 = 150;}
+        if (temp1 > 3000) // 175mV
+        { temp3 = 175;}
+        if (temp1 > 3800) // 200mV
+        { temp3 = 200;}
+        if (temp1 > 4950) // 225mV
+        { temp3 = 225;}
+        if (temp1 > 6000) // 250mV
+        { temp3 = 250;}
+        if (temp1 > 7400) // 275mV
+        { temp3 = 275;}
+        if (temp1 > 8650) // 300mV
+        { temp3 = 300;}
+        if (temp1 > 11700) // 350mV
+        { temp3 = 350;}
+        if (temp1 > 15300) // 400mV
+        { temp3 = 400;}
+        if (temp1 > 19400) // 450mV
+        { temp3 = 450;}
+        if (temp1 > 24000) // 500mV
+        { temp3 = 500;}
+        if (temp1 > 29000) // 550mV
+        { temp3 = 550;}
+        if (temp1 > 34600) // 600mV
+        { temp3 = 600;}
+        if (temp1 > 40000) // 650mV
+        { temp3 = 650;}
+        if (temp1 > 47000) // 700mV
+        { temp3 = 700;}
+        if (temp1 > 54000) // 750mV
+        { temp3 = 750;}
+        if (temp1 > 61500) // 800mV
+        { temp3 = 800;}
+        if (temp1 > 69400) // 850mV
+        { temp3 = 850;}
+        if (temp1 > 77850) // 900mV
+        { temp3 = 900;}
+        if (temp1 > 86700) // 950mV
+        { temp3 = 950;}
+        if (temp1 > 96100) // 1000mV
+        { temp3 = 1000;}
+        if (temp1 > 116300) // 1100mV
+        { temp3 = 1100;}
+        if (temp1 > 138400) // 1200mV
+        { temp3 = 1200;}
+        if (temp1 > 162400) // 1300mV
+        { temp3 = 1300;}
+        if (temp1 > 188400) // 1400mV
+        { temp3 = 1400;}
+        if (temp1 > 216000) // 1500mV
+        { temp3 = 1500;}
+        FFT_out_32[k] = temp3;
+    }
+}
+//=============================================//
+/*#pragma CODE_SECTION(FFT_16, "ramfuncs")
+void 	FFT_16(void)
+{
+    // FFT:
+    Uint16 p;
+    Uint16 k;
+    int32 a_r;
+    int32 a_i;
+    int32 b_r;
+    int32 b_i;
+    int32 w_r;
+    int32 w_i;
+    int32 temp1;
+    int32 temp2;
+    int16  temp3;
+    //
+    for (k=0;k<16;k++)
+    {
+        temp3 = (ADC_Buff_M2[(index*4) + k] - 2048);
+        fft_draft[2*k] = temp3;
+        fft_draft[2*k+1] = 0 ;
+    }
+    for (k=16;k<32;k++)
+    {
+        fft_draft[2*k] = 0;
+        fft_draft[2*k+1] = 0 ;
+    }
+
+    //
+    for(p=0;p<8;p++)
+    {
+        for(k=p;k<16;k=k+16)
+        {
+            a_r = fft_draft[2*k];
+            a_i = fft_draft[2*k+1];
+            b_r = fft_draft[2*k+16];
+            b_i = fft_draft[2*k+16+1];
+            //w=(exp(-pi*1i*p/16));
+            w_r = Weight[4*p];
+            w_i = Weight[4*p+1];
+            //fft_draft(k+1)=a+b;
+            fft_draft[2*k] = a_r + b_r;
+            fft_draft[2*k+1] = a_i + b_i;
+            // fft_draft(k+16)=(a-b)*w;
+            temp1 = ((a_r - b_r) * w_r) - ((a_i - b_i) * w_i);
+            fft_draft[2*k+16] = temp1 >> 8;
+            temp2 = ((a_r - b_r) * w_i) + ((a_i - b_i) * w_r);
+            fft_draft[2*k+16+1] = temp2 >> 8;
+        }
+    }
+    //
+    for (p=0;p<4;p++)
+    {
+        for (k=p;k<16;k=k+8)
+        {
+            a_r = fft_draft[2*k];
+            a_i = fft_draft[2*k+1];
+            b_r = fft_draft[2*k+8];
+            b_i = fft_draft[2*k+8+1];
+            //%t=(exp(-pi*1i*2*p/16));
+            //%w=Weight(2*p+1);
+            w_r = Weight[8*p];
+            w_i = Weight[8*p+1];
+            //%fft_draft(k+1)=b+fft_draft(k+8+1);
+            fft_draft[2*k] = a_r + b_r;
+            fft_draft[2*k+1] = a_i + b_i;
+            temp1 = ((a_r - b_r) * w_r) - ((a_i - b_i) * w_i);
+            fft_draft[2*k+8] = temp1 >> 8;
+            temp2 = ((a_r - b_r) * w_i) + ((a_i - b_i) * w_r);
+            fft_draft[2*k+1+8] = temp2 >> 8;
+        }
+    }
+    //
+    for (p=0;p<2;p++)
+    {
+        for (k=p;k<16;k=k+4)
+        {
+            a_r = fft_draft[2*k];
+            a_i = fft_draft[2*k+1];
+            b_r = fft_draft[2*k+4];
+            b_i = fft_draft[2*k+1+4];
+            // %t=(exp(-pi*1i*4*p/16));
+            // %t=Weight(4*p+1);
+            w_r = Weight[16*p];
+            w_i = Weight[16*p+1];
+
+            // %fft_draft(k+1)=b+fft_draft(k+4+1);
+            fft_draft[2*k] = (a_r + b_r);
+            fft_draft[2*k+1] = (a_i + b_i);
+
+            // %fft_draft(k+4+1)=(b-fft_draft(k+4+1))*t;
+            temp1 = ((a_r - b_r) * w_r) - ((a_i - b_i) * w_i);
+            fft_draft[2*k+4] = temp1 >> 8;
+            temp2 = ((a_r - b_r) * w_i) + ((a_i - b_i) * w_r);
+            fft_draft[2*k+1+4] = temp2 >> 8;
+        }
+    }
+    //
+    //m=1:
+    p=0;
+    for (k=p;k<16;k=k+2)
+    {
+        a_r = fft_draft[2*k];
+        a_i = fft_draft[2*k+1];
+        b_r = fft_draft[2*k+2];
+        b_i = fft_draft[2*k+1+2];
+        //t=(exp(-pi*1i*8*p/16));
+        //t=Weight(8*p+1);
+        w_r = Weight[32*p];
+        w_i = Weight[32*p+1];
+
+        //fft_draft(k+1)=b+fft_draft(k+2+1);
+        fft_draft[2*k] = (a_r + b_r);
+        fft_draft[2*k+1] = (a_i + b_i);
+
+        //fft_draft(k+2+1)=(a-fft_draft(k+2+1))*t;
+        temp1 = ((a_r - b_r) * w_r) - ((a_i - b_i) * w_i);
+        fft_draft[2*k+2] = temp1 >> 8;
+        temp2 = ((a_r - b_r) * w_i) + ((a_i - b_i) * w_r);
+        fft_draft[2*k+1+2] = temp2 >> 8;
+    }
+
+    //        Uint16 perm_16[] = {0,16,8,24,4,20,12,28,2,18,10,26,6,22,14,30};
+    Uint16 pidx;
+    for (k=0;k<8;k++)
+    {
+        pidx = perm_16[k];
+        temp1 = (fft_draft[pidx] * fft_draft[pidx]) + (fft_draft[pidx+1] * fft_draft[pidx+1]);
+        //FFT_out_16[index][k] = (temp1 >> 16);  //[k + index] = temp1 >> 16;
+        //temp1 = sqrt(temp1); // ???
+        temp1 = (temp1 >> 10);
+        temp3 = 0;
+        if (temp1 > 60) // 25mV (Vp_p ADCinput, Vref = 1650mV)
+        { temp3 = 25;}
+        if (temp1 > 240) // 50mV (Vp_p ADCinput, Vref = 1650mV)
+        { temp3 = 50;}
+        if (temp1 > 550) // 75mV (Vp_p ADCinput, Vref = 1650mV)
+        { temp3 = 75;}
+        if (temp1 > 950) // 100mV
+        { temp3 = 100;}
+        if (temp1 > 1500) // 125mV
+        { temp3 = 125;}
+        if (temp1 > 2150) // 150mV
+        { temp3 = 150;}
+        if (temp1 > 3000) // 175mV
+        { temp3 = 175;}
+        if (temp1 > 3800) // 200mV
+        { temp3 = 200;}
+        if (temp1 > 4950) // 225mV
+        { temp3 = 225;}
+        if (temp1 > 6000) // 250mV
+        { temp3 = 250;}
+        if (temp1 > 7400) // 275mV
+        { temp3 = 275;}
+        if (temp1 > 8650) // 300mV
+        { temp3 = 300;}
+        if (temp1 > 11700) // 350mV
+        { temp3 = 350;}
+        if (temp1 > 15300) // 400mV
+        { temp3 = 400;}
+        if (temp1 > 19400) // 450mV
+        { temp3 = 450;}
+        if (temp1 > 24000) // 500mV
+        { temp3 = 500;}
+        if (temp1 > 29000) // 550mV
+        { temp3 = 550;}
+        if (temp1 > 34600) // 600mV
+        { temp3 = 600;}
+        if (temp1 > 40000) // 650mV
+        { temp3 = 650;}
+        if (temp1 > 47000) // 700mV
+        { temp3 = 700;}
+        if (temp1 > 54000) // 750mV
+        { temp3 = 750;}
+        if (temp1 > 61500) // 800mV
+        { temp3 = 800;}
+        if (temp1 > 69400) // 850mV
+        { temp3 = 850;}
+        if (temp1 > 77850) // 900mV
+        { temp3 = 900;}
+        if (temp1 > 86700) // 950mV
+        { temp3 = 950;}
+        if (temp1 > 96100) // 1000mV
+        { temp3 = 1000;}
+        if (temp1 > 116300) // 1100mV
+        { temp3 = 1100;}
+        if (temp1 > 138400) // 1200mV
+        { temp3 = 1200;}
+        if (temp1 > 162400) // 1300mV
+        { temp3 = 1300;}
+        if (temp1 > 188400) // 1400mV
+        { temp3 = 1400;}
+        if (temp1 > 216000) // 1500mV
+        { temp3 = 1500;}
+        FFT_out_16[index][k] = temp3;
+    }
+}*/
+//=============================================//
+void 	Init_GPIOs(void)
+{
+    // Configure GPIOs:
+    EALLOW;
+    ///////
+      Toggle1_Mux = 0;
+       Toggle1_Dir = 1;
+       Toggle1_Clr = 1;
+
+/*    Zero_Cross_pin_Mux = 0;         // GPIO
+    Zero_Cross_pin_Dir = 0;          // input
+    Zero_Cross_pin_Qual = 2;        // XINT1 Qual using 6 samples
+    Zero_Cross_pin_Smpl = 5;   // Each sampling window is 10*SYSCLKOUT (for GPIOs 0 to 7), sample_window = 6*10*16.67ns = 1us
+    //
+    Key_Sens_Mux = 0; // Set Pin as KeyS1
+    Key_Sens_Dir = 0; // Set input
+    Key_Sens_PullUp = 0; // Set PullUp
+    Key_Sens_Dat = 1; //
+    Key_Sens_Qual = 2; // 6 samples
+    //
+    Key_Sync_Mux = 0; // Set Pin as KeyS1
+    Key_Sync_Dir = 0; // Set input
+    Key_Sync_PullUp = 0; // Set PullUp
+    Key_Sync_Dat = 1; //
+    Key_Sync_Qual = 2; // 6 samples
+    //
+    //
+    Key_M4_Mux    = 0; // Set Pin as Key_Mode_4
+    Key_M4_Dir    = 0; // Set input
+    Key_M4_PullUp = 0; // Set PullUp
+    Key_M4_Dat    = 1; //
+    //
+    Key_M8_Mux    = 0; // Set Pin as Key_Mode_8
+    Key_M8_Dir    = 0; // Set input
+    Key_M8_PullUp = 0; // Set PullUp
+    Key_M8_Dat    = 1; //
+    //
+    LED_M8_Mux    = 0; // Set Pin as LED2
+    LED_M8_Dir    = 1; // Set Output
+    LED_M8_Clr    = 1; // Set zero
+    //
+    LED_M4_Mux   = 0; // Set Pin as LED1
+    LED_M4_Dir   = 1; // Set Output
+    LED_M4_Clr   = 1; // Set zero
+    */
+    //
+    //
+   // Err_pin_Mux = 0; // Set Pin as Error
+   // Err_pin_Dir = 1; // Set Output
+   // Err_pin_Clr = 1; // Set zero
+    //
+  //  Activate_Pulse_Mux  = 0; // Set Pin as Activate_Pulse
+  //  Activate_Pulse_Dir  = 1; // Set output
+  //  Activate_Pulse_Clr = 1;
+    //
+  //  No_Inpt_Flag_Mux    = 0; // Set Pin as No_Inerrupt_Flag
+  //  No_Inpt_Flag_Dir    = 1; // Set output
+  //  No_Inpt_Flag_Clr    = 1; // Set zero
+    //
+    //Boot_pin1_Mux  = 0; // Set Pin as boot_from_flash
+    //Boot_pin_Dir   = 0; // Set Input
+    //
+
+    //
+    /* Set qualification for selected pins to asynch only */
+    // This will select asynch (no qualification) for the selected pins.
+    // Comment out other unwanted lines.
+    EDIS;
+}
+//=============================================//
+//=============================================//
+void 	Init_ADC(void)
+{
+    EALLOW;
+    // initialize adc
+    SysCtrlRegs.PCLKCR0.bit.ADCENCLK = 1; // Return ADC clock to original state
+    __asm (" NOP");
+    __asm (" NOP");
+    AdcRegs.ADCCTL1.bit.RESET = 1;
+    __asm (" NOP");
+    __asm (" NOP");
+    __asm (" NOP");
+    __asm (" NOP");
+    AdcRegs.ADCCTL1.bit.ADCPWDN = 1;
+    AdcRegs.ADCCTL1.bit.ADCBGPWD = 1;
+    AdcRegs.ADCCTL1.bit.ADCREFPWD = 1;
+    AdcRegs.ADCCTL1.bit.ADCREFSEL = 1;
+    AdcRegs.ADCCTL1.bit.INTPULSEPOS = 1;
+    AdcRegs.ADCCTL1.bit.VREFLOCONV = 0;
+    AdcRegs.ADCCTL1.bit.TEMPCONV = 0;
+    //
+    AdcRegs.ADCCTL2.bit.CLKDIV2EN = 0;
+    AdcRegs.ADCCTL2.bit.ADCNONOVERLAP = 0;
+    ////////////////////////////////////////
+    // Rx input signal:
+    AdcRegs.ADCSOC0CTL.bit.CHSEL=0x9; // B1 pin
+    AdcRegs.ADCSOC0CTL.bit.ACQPS = 7; // (this + 1 + 6clkcycle(16.66ns)) = sampling time in ns
+    AdcRegs.ADCSOC1CTL.bit.CHSEL=0x9; // B1 pin
+    AdcRegs.ADCSOC1CTL.bit.ACQPS = 7;
+    AdcRegs.INTSEL1N2.bit.INT1CONT = 0;
+    AdcRegs.INTSEL1N2.bit.INT2CONT = 0;
+    AdcRegs.ADCINTSOCSEL1.bit.SOC0 = 0;
+    AdcRegs.ADCINTSOCSEL1.bit.SOC1 = 0;
+    AdcRegs.INTSEL1N2.bit.INT1SEL = 0; // connect EOC0 to ADCINT1
+    AdcRegs.INTSEL1N2.bit.INT1E = 1;
+    AdcRegs.INTSEL1N2.bit.INT2SEL = 1; // connect EOC1 to ADCINT2
+    AdcRegs.INTSEL1N2.bit.INT2E = 1;
+    AdcRegs.SOCPRICTL.bit.SOCPRIORITY = 2; // SOC0 & SOC1 highest priority
+    AdcRegs.ADCSOC0CTL.bit.TRIGSEL = 0x09; //   ePWM3, ADCSOCA
+    AdcRegs.ADCSOC1CTL.bit.TRIGSEL = 0x0A; //   ePWM3, ADCSOCB
+    ///////////////////////////////
+    //   AdcRegs.INTSEL1N2.bit.INT2SEL=1;
+    //   AdcRegs.INTSEL1N2.bit.INT2E=1;
+    EPwm3Regs.TBCTL.bit.HSPCLKDIV = TB_DIV1; // TBCLK = SYSCLKOUT
+    EPwm3Regs.TBCTL.bit.CLKDIV = TB_DIV1;
+    EPwm3Regs.ETSEL.bit.SOCAEN = 0;
+    EPwm3Regs.ETSEL.bit.SOCBEN = 0;
+    EPwm3Regs.ETSEL.bit.SOCASEL = 0b100;    //Enable event time-base counter equal to CMPA when the timer is incrementing
+    EPwm3Regs.ETSEL.bit.SOCBSEL = 0b010;    //Enable event time-base counter equal to period (TBCTR = TBPRD)
+    EPwm3Regs.ETPS.bit.SOCAPRD   = 1;        // Generate pulse on 1st event
+    EPwm3Regs.ETPS.bit.SOCBPRD   = 1;        // Generate pulse on 1st event
+    EPwm3Regs.TBPRD = 37;   //35; // 18 * 16.66  => 300ns sampling // Period = * TBCLK counts
+    EPwm3Regs.CMPA.half.CMPA = 19;  //18; // Compare A TBCLK counts
+    //    EPwm3Regs.TBPRD = 120;   // 60 * 16.66  => 1us sampling // Period = * TBCLK counts
+    //    EPwm3Regs.CMPA.half.CMPA = 60;  // Compare A TBCLK counts
+    //   EPwm3Regs.CMPB = 30; // Compare B TBCLK counts
+    EPwm3Regs.TBPHS.half.TBPHS = 0; // Set Phase register to zero
+    EPwm3Regs.TBCTR = 0; // clear TB counter
+    EPwm3Regs.TBCTL.bit.CTRMODE = TB_COUNT_UP;
+    EPwm3Regs.TBCTL.bit.PHSEN = TB_DISABLE; // Phase loading disabled
+    EPwm3Regs.TBCTL.bit.PRDLD = TB_SHADOW;
+    EPwm3Regs.TBCTL.bit.SYNCOSEL = TB_SYNC_DISABLE;
+    EPwm3Regs.CMPCTL.bit.SHDWAMODE = CC_SHADOW;
+    EPwm3Regs.CMPCTL.bit.SHDWBMODE = CC_SHADOW;
+    EPwm3Regs.CMPCTL.bit.LOADAMODE = CC_CTR_ZERO; // load on TBCTR = Zero
+    EPwm3Regs.CMPCTL.bit.LOADBMODE = CC_CTR_ZERO; // load on TBCTR = Zero
+    ///////////////////////////////////////////////////////////
+    //AdcRegs.ADCSOC2CTL.bit.CHSEL = 0x1; // A1 pin for TxTuneA
+    //AdcRegs.ADCSOC2CTL.bit.ACQPS = 10;
+    //AdcRegs.ADCSOC2CTL.bit.TRIGSEL = 0; // software trigger
+    //AdcRegs.ADCINTSOCSEL1.bit.SOC2 = 0;
+    //AdcRegs.INTSEL3N4.bit.INT3CONT = 0; // ????
+    //AdcRegs.INTSEL3N4.bit.INT3SEL = 2;  // connect EOC2 to ADCINT3
+    //AdcRegs.INTSEL3N4.bit.INT3E = 1;
+    /////////////////////////////////////////////////////////
+    //AdcRegs.ADCSOC3CTL.bit.CHSEL = 0x3; // A3 pin for TxTuneB
+    //AdcRegs.ADCSOC3CTL.bit.ACQPS = 10;
+    //AdcRegs.ADCSOC3CTL.bit.TRIGSEL = 0; // software trigger
+    //AdcRegs.ADCINTSOCSEL1.bit.SOC3 = 0;
+    //AdcRegs.INTSEL3N4.bit.INT4CONT = 0; // ???
+    //AdcRegs.INTSEL3N4.bit.INT4SEL = 3;  // connect EOC3 to ADCINT4
+    //AdcRegs.INTSEL3N4.bit.INT4E = 1;
+    //
+    //AdcRegs.ADCSOC4CTL.bit.CHSEL = 0xB; // B3 pin for RxMode2
+    //AdcRegs.ADCSOC4CTL.bit.ACQPS = 22;
+    //AdcRegs.ADCSOC4CTL.bit.TRIGSEL = 0; // software trigger
+    //AdcRegs.ADCINTSOCSEL1.bit.SOC4 = 0;
+    //AdcRegs.INTSEL5N6.bit.INT5CONT = 0; // ???
+    //AdcRegs.INTSEL5N6.bit.INT5SEL = 4;  // connect EOC4 to ADCINT5
+    //AdcRegs.INTSEL5N6.bit.INT5E = 1;
+    //
+    AdcRegs.ADCCTL1.bit.ADCENABLE = 1;
+    DELAY_US(1000);
+
+    EDIS;
+
+}
+//=============================================//
+//=============================================//
+#pragma CODE_SECTION(ADC_Capture_M1, "ramfuncs");
+void 	ADC_Capture_M1(void)
+{// Start ADC:
+
+    //int16   ADC_Buffer[32];
+    //    GpioDataRegs.GPASET.bit.GPIO3=1; //LED2
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    EPwm3Regs.TBCTR = 0; // init TB counter
+    EPwm3Regs.ETSEL.bit.SOCAEN = 1;
+    EPwm3Regs.ETSEL.bit.SOCBEN = 1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[0] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+1] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[1] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+2] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[2] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+3] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[3] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+4] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[4] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+5] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[5] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+6] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[6] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+7] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[7] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+8] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[8] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+9] = AdcResult.ADCRESULT1;
+    ADC_Buffer[9] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+10] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[10] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+11] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[11] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+12] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[12] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+13] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[13] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+14] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[14] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+15] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[15] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+16] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[16] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+17] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[17] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+18] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[18] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+19] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[19] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+20] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[20] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+21] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[21] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+22] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[22] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+23] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[23] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+24] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[24] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+25] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[25] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+26] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[26] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+27] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[27] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+28] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[28] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+29] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[29] = AdcResult.ADCRESULT1;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT1 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT1=1;
+    //    ADC_Buffer[index+30] = AdcResult.ADCRESULT0 + 0xF800;
+    ADC_Buffer[30] = AdcResult.ADCRESULT0;
+    //
+    while(AdcRegs.ADCINTFLG.bit.ADCINT2 == 0){}
+    AdcRegs.ADCINTFLGCLR.bit.ADCINT2=1;
+    //    ADC_Buffer[index+31] = AdcResult.ADCRESULT1 + 0xF800;
+    ADC_Buffer[31] = AdcResult.ADCRESULT1;
+    //
+    ////}
+    //    GpioDataRegs.GPACLEAR.bit.GPIO3=1; //LED2
+    EPwm3Regs.ETSEL.bit.SOCAEN = 0;
+    EPwm3Regs.ETSEL.bit.SOCBEN = 0;
+
+}
+//=============================================//
+//=============================================//
+//=============================================//

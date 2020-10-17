@@ -1,0 +1,23 @@
+
+**** Build of configuration Debug for project DSP_ADC_FFT ****
+
+"C:\\ti\\ccsv7\\utils\\bin\\gmake" -k -j 8 all -O 
+ 
+'Building file: "../Source/DSP2803x_CSMPasswords.asm"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --include_path="D:/GitHub_MyRep/DSP_FFT_ADC/DSP_Workspace/DSP_ADC_FFT" --include_path="D:/GitHub_MyRep/DSP_FFT_ADC/DSP_Workspace/DSP_ADC_FFT/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="Source/DSP2803x_CSMPasswords.d_raw" --obj_directory="Source"  "../Source/DSP2803x_CSMPasswords.asm"
+'Finished building: "../Source/DSP2803x_CSMPasswords.asm"'
+ 
+'Building file: "../main.c"'
+'Invoking: C2000 Compiler'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --include_path="D:/GitHub_MyRep/DSP_FFT_ADC/DSP_Workspace/DSP_ADC_FFT" --include_path="D:/GitHub_MyRep/DSP_FFT_ADC/DSP_Workspace/DSP_ADC_FFT/include" --include_path="C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number --preproc_with_compile --preproc_dependency="main.d_raw"  "../main.c"
+'Finished building: "../main.c"'
+ 
+'Building target: "DSP_ADC_FFT.out"'
+'Invoking: C2000 Linker'
+"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/bin/cl2000" -v28 -ml -mt --cla_support=cla0 -O3 --advice:performance=all -g --diag_warning=225 --diag_wrap=off --display_error_number -z -m"DSP_ADC_FFT.map" --stack_size=0x300 --warn_sections -i"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/lib" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-c2000_16.9.6.LTS/include" --reread_libs --diag_wrap=off --display_error_number --xml_link_info="DSP_ADC_FFT_linkInfo.xml" --rom_model -o "DSP_ADC_FFT.out" "./main.obj" "./Source/DSP2803x_CSMPasswords.obj" "./Source/DSP2803x_CodeStartBranch.obj" "./Source/DSP2803x_CpuTimers.obj" "./Source/DSP2803x_DefaultIsr.obj" "./Source/DSP2803x_GlobalVariableDefs.obj" "./Source/DSP2803x_PieCtrl.obj" "./Source/DSP2803x_PieVect.obj" "./Source/DSP2803x_SysCtrl.obj" "./Source/DSP2803x_usDelay.obj" "../DSP2803x_Headers_nonBIOS.cmd" "../F28033.cmd"  -llibc.a 
+<Linking>
+'Finished building target: "DSP_ADC_FFT.out"'
+ 
+
+**** Build Finished ****
